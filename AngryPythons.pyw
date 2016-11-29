@@ -9,8 +9,8 @@ import shapeGen
 MENU_STRINGS = (
                 "Number of targets",
                 "Number of obstacles",
-                "Number of tries",
-                "FPS",
+                "Ammo",
+                "Ticks per second",
                 "Force multiplier",
                 "Surface friction",
                 "Projectile elasticity",
@@ -30,14 +30,6 @@ MENU_DEFAULTS = (
 MENU_COLUMN_NUMBER = 4
 
 
-## Colours, specified as HEX codes
-#COLOURS = {
-#    'red'       : '#ef3b3b',
-#    'gold'      : '#ecef3b',
-#    'green'     : '#13c625',
-#}
-
-
 
 # Program entry point, opens window and displays options menu
 def main(width, height):
@@ -48,71 +40,75 @@ def main(width, height):
         menuInputs = menu(win, menuInputs)
 
 
-# Run the game with the specified parameters
+# Run the game with the specified options
 def play(win, options):
 
     # Load options from menu
     targetNumber = options[0]
     obstacleNumber = options[1]
-    triesLeft = options[2]
+    ammo = options[2]
     physicsConstants = options[3:8]
     obstacleDimensionRanges = options[8:12]
 
-    bearingPoint = Point(win.getWidth() / 10, win.getHeight() * 4 / 5) # Top of catapult
+    # Coordinate of top of catapult
+    topOfCatapult = Point(win.getWidth() / 10, win.getHeight() * 4 / 5)
 
     # Draw constants and UI
     drawBackdrop(win)
-    drawScenery(win, bearingPoint)
+    drawScenery(win, topOfCatapult)
     menuButton = drawButton(win, [0, 20, 0, 80], "red", "Menu", "gold")
-    triesLeftDisplay = Text(Point(100, 10), triesLeft)
-    triesLeftDisplay.draw(win)
+    ammoDisplay = Text(Point(100, 10), ammo)
+    ammoDisplay.draw(win)
 
     # Generate level
     obstacles = shapeGen.genRandomObstacles(win, obstacleNumber, obstacleDimensionRanges)
-    if obstacles == []:
-        showMessage(win, "Failed to place obstacles!", "red", "orange")
-        return
     targets = shapeGen.genRandomTargets(win, targetNumber, obstacles)
-    if targets == []:
-        showMessage(win, "Failed to place targets!", "red", "orange")
-        return
-
-    # Testing - uncomment below for hard-coded level layout
+    # Uncomment below for hard-coded level layout
     #obstacles = shapeGen.setObstacles(win)
     #targets = shapeGen.setTargets(win)
 
-    # Listen for user interaction
-    while triesLeft > 0 and len(targets) > 0:
+    won = False
+    lost = False
 
-        # Check for non game related clicking
-        clickPos = Point(1000, 0) #Invalid data for while
-        while clickPos.getX() > win.getWidth() / 10: # Out of bounds (right of catapult)
-            clickPos = win.getMouse()
+    # Game loop
+    while not won and not lost:
+
+        # Listen for user interaction
+        clickPos = getUserInput(win)
+
+        # Check if user clicked the menu button
         if mouseOverrectangle(clickPos, menuButton):
             return # End game and return to menu
 
-        # => valid position to fire from
-
-        # Update tries left
-        triesLeft = triesLeft - 1
-        triesLeftDisplay.setText(triesLeft)
+        # Update ammo
+        ammo = ammo - 1
+        ammoDisplay.setText(ammo)
 
         # Run simulation
-        physics.simulateProjectile(win, bearingPoint, clickPos, obstacles, targets, physicsConstants)
+        physics.simulateProjectile(win, topOfCatapult, clickPos, obstacles, targets, physicsConstants)
 
-    # => game finished (either no tries or targets remaining)
-
-    won = len(targets) == 0
+        # win when no targets are left
+        won = len(targets) == 0
+        # lose when ammo runs out
+        lost = ammo == 0
 
     if won:
         showMessage(win, "You win", "darkgreen", "yellow")
-    else:
-        showMessage(win, "Out of tries", "red", "orange")
+    elif lost:
+        showMessage(win, "Out of ammo", "red", "orange")
 
-    win.getMouse()
+    # Clean up these objects, then return to the menu
     undrawAll(targets)
     undrawAll(obstacles)
     return
+
+
+def getUserInput(win):
+    clickPos = win.getMouse()
+    # Ignore clicks that are out of bounds (right of catapult)
+    while clickPos.getX() > win.getWidth() / 10:
+        clickPos = win.getMouse()
+    return clickPos
 
 
 def undrawAll(shapes):
@@ -143,22 +139,16 @@ def menu(win, menuInputs):
 
     # Listen for click of Play or Defaults button by checking the mouse position
     # each time the user clicks until it's within one of the buttons
-
-    # Wait for the user to click
     clickPos = win.getMouse()
-
-    # Keep looping till they click within the Play button
     while not mouseOverrectangle(clickPos, playButton):
 
         # Check if they clicked the Defaults button
         if mouseOverrectangle(clickPos, defaultsButton):
             # Redraw menu with default values
-            for item in menuInputs:
-                item.undraw()
+            undrawAll(menuInputs)
             menuInputs = intialiseMenuInputs()
             for item in menuInputs:
                 item.draw(win)
-
         # Wait for the next click
         clickPos = win.getMouse()
 
@@ -287,25 +277,25 @@ def drawBackdrop(win):
 
 
 # Draws the game's static scenary
-def drawScenery(win, bearingPoint):
+def drawScenery(win, topOfCatapult):
     # Draw power rings
     outerRingRadius = win.getWidth() / 8
     # Draw a red ring at full size
-    redRing = Circle(bearingPoint, outerRingRadius)
+    redRing = Circle(topOfCatapult, outerRingRadius)
     redRing.setFill("red")
     redRing.draw(win)
     # Draw a yellow ring on top, 2/3 the size of the red ring
-    yellowRing = Circle(bearingPoint, outerRingRadius * 2 / 3)
+    yellowRing = Circle(topOfCatapult, outerRingRadius * 2 / 3)
     yellowRing.setFill("yellow")
     yellowRing.draw(win)
     # Draw a green ring on top, 1/3 the size of the red ring
-    greenRing = Circle(bearingPoint, outerRingRadius / 3)
+    greenRing = Circle(topOfCatapult, outerRingRadius / 3)
     greenRing.setFill("green")
     greenRing.draw(win)
 
     # Draw catapult
-    catapultBottomPos = Point(bearingPoint.getX() - 5, win.getHeight())
-    catapult = Rectangle(bearingPoint, catapultBottomPos)
+    catapultBottomPos = Point(topOfCatapult.getX() - 5, win.getHeight())
+    catapult = Rectangle(topOfCatapult, catapultBottomPos)
     catapult.setFill("brown")
     catapult.draw(win)
 
@@ -315,6 +305,7 @@ def drawScenery(win, bearingPoint):
     sky = Rectangle(skyTopLeft, skyBottomRight)
     sky.setFill("lightblue")
     sky.draw(win)
+
 
 
 main(1200, 500)
