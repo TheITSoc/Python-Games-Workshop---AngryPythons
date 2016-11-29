@@ -23,7 +23,7 @@ MENU_STRINGS = (
 # Tuple of default values for each menu option
 MENU_DEFAULTS = (
                  "3", "10", "10",
-                 "60", "12", "0.15", "0.5", "9.8",
+                 "90", "10", "0.15", "0.5", "9.8",
                  "10", "30", "70", "300")
 
 # Number of columns in the menu (must be even)
@@ -84,7 +84,7 @@ def play(win, options):
         ammo = ammo - 1
         ammoDisplay.setText(ammo)
 
-        # Run simulation
+        drawCrosshair(win,clickPos)
         physics.simulateProjectile(win, topOfCatapult, clickPos, obstacles, targets, physicsConstants)
 
         # win when no targets are left
@@ -103,6 +103,7 @@ def play(win, options):
     return
 
 
+# Wait for the user to click in a valid firing position
 def getUserInput(win):
     clickPos = win.getMouse()
     # Ignore clicks that are out of bounds (right of catapult)
@@ -232,6 +233,14 @@ def intialiseMenuInputs():
 ################################################################################
 # Code for drawing
 ################################################################################
+
+# Drawns an X at Point pos
+def drawCrosshair(win, pos):
+    crosshair = Text(pos, "X")
+    crosshair.setSize(10)
+    crosshair.setTextColor("blue")
+    crosshair.draw(win)
+
 
 # Draws a button with a solid fill colour
 def drawButton(win, bounds, fillColour, text, textColour):

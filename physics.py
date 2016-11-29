@@ -1,5 +1,4 @@
 from graphics import *
-from datetime import datetime
 import math
 
 
@@ -7,65 +6,61 @@ import math
 def simulateProjectile(win, start, clickPos, obstacles, targets, physicsConstants):
 
     # Load constants
-    fps, forceMetric, friction, elasticity, gravity = physicsConstants
-    tickLength = 1/fps
-    timeMetric = 0.01 # Hidden constant for calibrating simulation speed
-    g = gravity * timeMetric
-    fm = forceMetric * timeMetric
-
-    # Draw cross-hair
-    crosshair = Text(clickPos, "X")
-    crosshair.setSize(10)
-    crosshair.setTextColor("blue")
-    crosshair.draw(win)
+    tps, forceMetric, friction, elasticity, g = physicsConstants
+    tickLength = 1 / tps # Desired time between ticks in milliseconds
+    pixelsPerMeter = 100 # For unit conversion
+    minVelocity = pixelsPerMeter ** 2 # Threshold for checking if stationary
 
     # Start position
     x = start.getX()
     y = start.getY()
 
     # Start velocity
-    Ux = (horizontalDistance(start, clickPos) * fm)
-    Uy = (verticalDistance(start, clickPos) * fm)
+    Ux = (horizontalDistance(start, clickPos) * forceMetric)
+    Uy = (verticalDistance(start, clickPos) * forceMetric)
     #If released above catapult, shoot downwards
     if clickPos.getY() < start.getY():
-        Uy = Uy * -1
+        Uy = -Uy
 
     t = 0 # Unit time (Number of ticks since arc started)
     canBreak = True # Determines projectiles ability to damage/destroy obstacles
-    stationary = False # Ensure run once
     projectile = drawProjectile(win, start) # Draw projectile
 
-    while not outOfBounds(win,x,y):
+    lastTick = time.time()
 
-        # Time for game speed
-        startTime = datetime.now()
+    while not outOfBounds(win, x, y):
 
-        newPoint = Point(x, y)
+        previousPos = Point(x, y)
 
-        # Run SUVAT
+        # Run SUVAT to calculate new position
         Sx = Ux * t
         Sy = Uy * t + 0.5 * -g * t ** 2
-        y = start.getY() - Sy
-        x = start.getX() + Sx
+        y = start.getY() - Sy / pixelsPerMeter
+        x = start.getX() + Sx / pixelsPerMeter
         t = t + 1
 
+        # Check if new position will put the projectile inside any objects
         collided = checkForCollisions(x, y, obstacles, targets)
-        if collided != None:
-            # Determine nature of collision
+        if collided:
 
-            # Impacted from the side
-            impactCheck = checkCollision(newPoint.getX(), y, collided)
-            if not impactCheck:
-                Ux = Ux * elasticity * -1   # Bounce
-            else:
-                Ux = Ux * (1-friction)      # Apply friction
+            # Determine direction of collision
+            # Both may be true if maving diagonally
 
-            # Impacted from above/below
-            impactCheck = checkCollision(x, newPoint.getY(), collided)
-            if not impactCheck:
-                Uy = (Uy + -g * t) * elasticity * -1 # Bounce
+            # If the change in x results in the collision
+            sideImpact = checkCollision(x, previousPos.getY(), collided)
+
+            # If the change in y results in the collision
+            verticalImpact = checkCollision(previousPos.getX(), y, collided)
+
+            if sideImpact:
+                Ux = Ux * -elasticity   # Bounce sideways
             else:
-                Uy = (Uy + -g * t) * (1-friction)    # Apply friction
+                Ux = Ux * (1-friction)  # Apply friction
+
+            if verticalImpact:
+                Uy = (Uy + -g * t) * -elasticity    # Bounce vertically
+            else:
+                Uy = (Uy + -g * t) * (1-friction)   # Apply friction
 
             # Interact with object hit
             if type(collided) == Circle: # If target then destroy
@@ -76,38 +71,34 @@ def simulateProjectile(win, start, clickPos, obstacles, targets, physicsConstant
                 obstacles.remove(collided)
 
             # End simulation if no movement
-            if stationary:
+            if Ux ** 2 < minVelocity and Uy ** 2 < minVelocity:
                 time.sleep(0.5) # Prevent instant disappearance
                 projectile.undraw()
                 break
-            if Ux ** 2 < 1 and Uy ** 2 < 1: # Ensures reasonable tolerance of minor movement
-                stationary = True
-            else:
-                stationary = False
 
             # Prepare for new arc
             t = 1
-            start = newPoint
+            start = previousPos
             canBreak = False # Can only break on first collision
 
         # => movement step complete
         projectile.undraw()
-        projectile = drawProjectile(win, newPoint)
+        projectile = drawProjectile(win, previousPos)
 
         # Time for game speed
-        duration = datetime.now() - startTime
-        elapsedTime = duration.total_seconds()
+        elapsedTime = time.time() - lastTick
         print(elapsedTime)
         if elapsedTime < tickLength:
             sleepTime = tickLength - elapsedTime
             time.sleep(sleepTime) # Wait before next step
+        lastTick = time.time()
 
     # => Projectile out of bounds (off-screen)
     projectile.undraw()
 
 
 # Whether the point x,y is out of bounds
-def outOfBounds(win,x,y):
+def outOfBounds(win, x, y):
     return x >= win.getWidth() or x <= 0 or y >= win.getHeight();
 
 
