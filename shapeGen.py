@@ -30,7 +30,7 @@ def setObstacles(win):
 # Creates and draws a new target (a green circle)
 def addTarget(win, targets, x, y, size):
     target = Circle(Point(x, y), size)
-    target.setFill("green")
+    target.setFill("#68ED44")
     target.draw(win)
     targets.append(target)
     return targets
@@ -39,7 +39,7 @@ def addTarget(win, targets, x, y, size):
 # Creates and draws a new obstacle, colour coded based on strength
 def addGradedWall(win, obstacles, obstacleDimensions, grade):
     y1, y2, x1, x2 = obstacleDimensions
-    wallColours = ["brown", "grey", "gold"]
+    wallColours = ["#CCCCCC", "#999999", "#666666"]
     for i in range (grade):
         wall = Rectangle(Point(x1, y1), Point(x2, y2))
         wall.setFill(wallColours[i])
