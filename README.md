@@ -18,6 +18,6 @@ This project was created for the University of Portsmouth IT Society in 2016 by 
 All workshop materials are intended for educational purposes and are under the GNU General Public License.
 
 The full project and workshop information can be found here:<br>
-https://github.com/TheITSoc/Python-Games-Workshop-AngryPythons
+https://github.com/TheITSoc/Python-Games-Workshop-AngryPythons <br>
 Workshop Handout:<br>
-https://docs.google.com/a/upsu.net/document/d/1PSj6foeJkYd_3v-eYXDWUqZUADeUbClj-re28xjW_Fg/edit?usp=sharing
+https://docs.google.com/document/d/1PSj6foeJkYd_3v-eYXDWUqZUADeUbClj-re28xjW_Fg/edit?usp=sharing
