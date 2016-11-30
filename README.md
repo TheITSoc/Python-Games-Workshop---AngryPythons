@@ -5,7 +5,10 @@ The graphics library used is the Simple object oriented graphics library by John
 Physics simulation is based on kinematics equations (SUVAT) and simple look-ahead collision logic. <br>
 
 This is a simplified version of the game with fixed levels and no options menu, 
-but still featuring projectile simulation, including gravity and elasticity (bouncing)
+but still featuring projectile simulation, including gravity and elasticity (bouncing).
+
+Check out the 'master' branch for the full version of the game, but with a more complex code base:
+https://github.com/TheITSoc/Python-Games-Workshop-AngryPythons/tree/master
 
 This project was created for the University of Portsmouth IT Society in 2016 by David Ralph, present VP Tech: David.M.L.Ralph@gmail.com
 
