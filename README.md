@@ -19,3 +19,5 @@ All workshop materials are intended for educational purposes and are under the G
 
 The full project and workshop information can be found here:<br>
 https://github.com/TheITSoc/Python-Games-Workshop-AngryPythons
+Workshop Handout:<br>
+https://docs.google.com/a/upsu.net/document/d/1PSj6foeJkYd_3v-eYXDWUqZUADeUbClj-re28xjW_Fg/edit?usp=sharing
