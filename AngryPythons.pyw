@@ -2,53 +2,21 @@ from graphics import *
 import physics
 import shapeGen
 
-# Below are some constants that are globabaly visible to make the code simpler
-# Note that in Python, a tuple is a list that cannot be modified
-
-# Tuple of the description text for each menu option
-MENU_STRINGS = (
-                "Number of targets",
-                "Number of obstacles",
-                "Ammo",
-                "Ticks per second",
-                "Force multiplier",
-                "Surface friction",
-                "Projectile elasticity",
-                "Gravity",
-                "Min obstacle width",
-                "Max obstacle width",
-                "Min obstacle length",
-                "Max obstacle length")
-
-# Tuple of default values for each menu option
-MENU_DEFAULTS = (
-                 "3", "10", "10",
-                 "90", "10", "0.15", "0.5", "9.8",
-                 "10", "30", "70", "300")
-
-# Number of columns in the menu (must be even)
-MENU_COLUMN_NUMBER = 4
-
-
 
 # Program entry point, opens window and displays options menu
 def main(width, height):
-
     win = GraphWin("PyBirds", width, height)
-    menuInputs = intialiseMenuInputs()
+    # Keep running the game until the window is closed
     while True:
-        menuInputs = menu(win, menuInputs)
+        play(win)
 
 
-# Run the game with the specified options
-def play(win, options):
+# Run the game
+def play(win):
 
-    # Load options from menu
-    targetNumber = options[0]
-    obstacleNumber = options[1]
-    ammo = options[2]
-    physicsConstants = options[3:8]
-    obstacleDimensionRanges = options[8:12]
+    # Load options
+    ammo = 5
+    physicsConstants = (90, 10, 0.15, 0.5, 9.8)
 
     # Coordinate of top of catapult
     topOfCatapult = Point(win.getWidth() / 10, win.getHeight() * 4 / 5)
@@ -56,16 +24,12 @@ def play(win, options):
     # Draw constants and UI
     drawBackdrop(win)
     drawScenery(win, topOfCatapult)
-    menuButton = drawButton(win, [0, 20, 0, 80], "red", "Menu", "gold")
-    ammoDisplay = Text(Point(100, 10), ammo)
+    ammoDisplay = Text(Point(10, 10), ammo)
     ammoDisplay.draw(win)
 
     # Generate level
-    obstacles = shapeGen.genRandomObstacles(win, obstacleNumber, obstacleDimensionRanges)
-    targets = shapeGen.genRandomTargets(win, targetNumber, obstacles)
-    # Uncomment below for hard-coded level layout
-    #obstacles = shapeGen.setObstacles(win)
-    #targets = shapeGen.setTargets(win)
+    obstacles = shapeGen.setObstacles(win)
+    targets = shapeGen.setTargets(win)
 
     won = False
     lost = False
@@ -75,10 +39,6 @@ def play(win, options):
 
         # Listen for user interaction
         clickPos = getUserInput(win)
-
-        # Check if user clicked the menu button
-        if mouseOverrectangle(clickPos, menuButton):
-            return # End game and return to menu
 
         # Update ammo
         ammo = ammo - 1
@@ -97,7 +57,7 @@ def play(win, options):
     elif lost:
         showMessage(win, "Out of ammo", "red", "orange")
 
-    # Clean up these objects, then return to the menu
+    # Clean up these objects, then return
     undrawAll(targets)
     undrawAll(obstacles)
     return
@@ -117,118 +77,6 @@ def undrawAll(shapes):
         shape.undraw()
 
 
-################################################################################
-# Code for Options Menu
-################################################################################
-
-# Draws the options menu
-def menu(win, menuInputs):
-
-    # Draw the background (i.e. clear the screen)
-    drawBackdrop(win)
-
-    # Create and draw the Play and Defaults buttons
-    playButton = drawButton(win, [0, 20, 0, 80], "darkgreen", "Play", "gold")
-    defaultsButton = drawButton(win, [0, 20, 80, 160], "gold", "Defaults", "red")
-
-    # Draw all the menu options input fields
-    for item in menuInputs:
-        item.draw(win)
-
-    # Draw the labels for each menu option
-    drawMenuItemLabels(win)
-
-    # Listen for click of Play or Defaults button by checking the mouse position
-    # each time the user clicks until it's within one of the buttons
-    clickPos = win.getMouse()
-    while not mouseOverrectangle(clickPos, playButton):
-
-        # Check if they clicked the Defaults button
-        if mouseOverrectangle(clickPos, defaultsButton):
-            # Redraw menu with default values
-            undrawAll(menuInputs)
-            menuInputs = intialiseMenuInputs()
-            for item in menuInputs:
-                item.draw(win)
-        # Wait for the next click
-        clickPos = win.getMouse()
-
-    # => play button has been clicked
-
-    # Validate menu option inputs, if any are invalid, returns defaults
-    options = []
-    for item in menuInputs:
-        try:
-            float(item.getText())   # Assumes all menu options are numeric
-        except ValueError:
-            for menuItem in menuInputs: # undraw menu
-                menuItem.undraw()
-            return menuInputs   # return default values
-
-        # => value is valid
-        options.append(eval(item.getText())) # Accept value
-        item.undraw() # Remove option from menu
-
-    play(win, options)
-    return menuInputs # Return new values
-
-
-# Determines whether a point is inside a rectangle
-def mouseOverrectangle(mousePosition, rectangle):
-    top, bottom, left, right = physics.determineRectangleBounds(rectangle)
-    if mousePosition.getX() >= left \
-    and mousePosition.getX() <= right \
-    and mousePosition.getY() >= top \
-    and mousePosition.getY() <= bottom:
-        return True
-    else:
-        return False
-
-
-
-
-################################################################################
-# Code for drawing Options Menu items
-################################################################################
-
-# Draw the text label for each menu option
-def drawMenuItemLabels(win):
-    for i in range(len(MENU_STRINGS)):
-
-        # Calculate position
-        x = i % MENU_COLUMN_NUMBER * 200 + 100
-        y = i // MENU_COLUMN_NUMBER * 80 + 50
-
-        # Draw label
-        Text(Point(x, y), MENU_STRINGS[i]).draw(win)
-
-
-# Generates a list of interface components for modifying game settings
-# using the default values provided
-def intialiseMenuInputs():
-
-    # Create an empty list
-    menuInputs = []
-
-    # Create and add an input for each menu item
-    for i in range (len(MENU_DEFAULTS)):
-
-        # Calculate Position
-        x = i % MENU_COLUMN_NUMBER * 200 + 100
-        y = i // MENU_COLUMN_NUMBER * 80 + 80
-
-        # Create input using position and size
-        tb = Entry(Point(x, y), 10)
-
-        # Set value to default
-        tb.setText(MENU_DEFAULTS[i])
-        tb.setFill("white")
-
-        # Add to input list so we can find it later
-        menuInputs.append(tb)
-
-    return menuInputs
-
 
 ################################################################################
 # Code for drawing
@@ -240,18 +88,6 @@ def drawCrosshair(win, pos):
     crosshair.setSize(10)
     crosshair.setTextColor("blue")
     crosshair.draw(win)
-
-
-# Draws a button with a solid fill colour
-def drawButton(win, bounds, fillColour, text, textColour):
-    top, bottom, left, right = bounds
-    button = Rectangle(Point(left, top), Point(right, bottom))
-    button.setFill(fillColour)
-    button.draw(win)
-    buttonText = Text(Point((left + right) / 2, (top + bottom) / 2), text)
-    buttonText.setTextColor(textColour)
-    buttonText.draw(win)
-    return button
 
 
 # Displays message in the middle of the screen with a coloured backdrop
