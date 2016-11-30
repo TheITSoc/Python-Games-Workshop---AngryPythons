@@ -7,7 +7,7 @@ Physics simulation is based on kinematics equations (SUVAT) and simple look-ahea
 This is a simplified version of the game with fixed levels and no options menu, 
 but still featuring projectile simulation, including gravity and elasticity (bouncing).
 
-Check out the 'master' branch for the full version of the game, but with a more complex code base:
+Check out the 'master' branch for the full version of the game, but with a more complex code base:<br>
 https://github.com/TheITSoc/Python-Games-Workshop-AngryPythons/tree/master
 
 This project was created for the University of Portsmouth IT Society in 2016 by David Ralph, present VP Tech: David.M.L.Ralph@gmail.com
@@ -16,3 +16,5 @@ All workshop materials are intended for educational purposes and are under the G
 
 The full project and workshop information can be found here:<br>
 https://github.com/TheITSoc/Python-Games-Workshop-AngryPythons
+Workshop Handout:<br>
+https://docs.google.com/a/upsu.net/document/d/1PSj6foeJkYd_3v-eYXDWUqZUADeUbClj-re28xjW_Fg/edit?usp=sharing
