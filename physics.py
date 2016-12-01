@@ -92,6 +92,7 @@ def simulateProjectile(win, start, clickPos, obstacles, targets, physicsConstant
             sleepTime = tickLength - elapsedTime
             time.sleep(sleepTime) # Wait before next step
         lastTick = time.time()
+        win.flush()
 
     # => Projectile out of bounds (off-screen)
     projectile.undraw()

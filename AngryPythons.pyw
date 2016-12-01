@@ -34,7 +34,7 @@ MENU_COLUMN_NUMBER = 4
 # Program entry point, opens window and displays options menu
 def main(width, height):
 
-    win = GraphWin("PyBirds", width, height)
+    win = GraphWin("PyBirds", width, height, autoflush=False)
     menuInputs = intialiseMenuInputs()
     while True:
         menuInputs = menu(win, menuInputs)
